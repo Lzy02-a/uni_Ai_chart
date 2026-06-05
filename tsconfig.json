@@ -50,7 +50,7 @@
     "src/**/*.jsx",
     "src/**/*.vue",
     "src/**/*.json"
-  ],
+, "src/api/Ai_Chat"  ],
   "exclude": [
     "node_modules",
     "dist"
