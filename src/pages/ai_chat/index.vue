@@ -18,12 +18,21 @@ interface ChatMessage {
 }
 
 const messages = ref<ChatMessage[]>([
-  { id: 1, role: 'system', content: '系统消息将在这里展示，顶部为滚动聊天区域。' },
-  { id: 2, role: 'user', content: '用户消息在右侧展示，底部输入区占页面高度的 20%。' },
+
 ])
 const ContentInput = ref('')
-async function handelSend(e: any) {
-  console.log('ContentInput', ContentInput.value)
+const isLoading = ref(false)
+async function handelSend(value: string) {
+  if (isLoading.value)
+    return
+
+  isLoading.value = true
+  messages.value.push({
+    id: Date.now(),
+    role: 'user',
+    content: value,
+  })
+
   const params = {
     messages: [
       {
@@ -31,7 +40,7 @@ async function handelSend(e: any) {
         role: 'system',
       },
       {
-        content: ContentInput.value,
+        content: value || '你好',
         role: 'user',
       },
     ],
@@ -54,8 +63,31 @@ async function handelSend(e: any) {
     logprobs: false,
     top_logprobs: null,
   }
-  const res = await Ai_Chat(params)
-  console.log('ddsddddd------------', res?.choices?.message?.content)
+
+  try {
+    const response = await Ai_Chat(params)
+    const assistantMessage = response.choices?.[0]?.message?.content?.trim()
+
+    if (!assistantMessage) {
+      throw new Error('AI 接口返回成功，但未拿到回复内容')
+    }
+
+    messages.value.push({
+      id: `${Date.now()}-assistant`,
+      role: 'system',
+      content: assistantMessage,
+    })
+  }
+  catch (error) {
+    console.error('Ai_Chat error:', error)
+    uni.showToast({
+      title: 'AI 回复解析失败',
+      icon: 'none',
+    })
+  }
+  finally {
+    isLoading.value = false
+  }
 }
 
 onShow(() => {
@@ -69,9 +101,12 @@ onShow(() => {
   <view class="page-container">
     <view class="chat-area">
       <scroll-review :messages="messages" :show-input="false" />
+      <view v-if="isLoading" class="thinking-tip">
+        AI 正在思考，请稍候...
+      </view>
     </view>
     <view class="bottom-input-area">
-      <BottomInput @send="handelSend" @update:model-value="ContentInput" />
+      <BottomInput v-model="ContentInput" :disabled="isLoading" :loading="isLoading" @send="handelSend" />
     </view>
   </view>
 </template>
@@ -85,6 +120,7 @@ onShow(() => {
 }
 
 .chat-area {
+  position: relative;
   flex: 9;
   min-height: 0;
   padding: 0;
@@ -94,6 +130,19 @@ onShow(() => {
   flex: 1;
   background: #ffffff;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.thinking-tip {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(64, 158, 255, 0.12);
+  color: #2f6fb3;
+  font-size: 13px;
+  line-height: 1;
 }
 
 .bottom-input-placeholder {

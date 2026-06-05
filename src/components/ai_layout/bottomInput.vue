@@ -4,8 +4,8 @@
       v-model="message" class="ai-textarea" :placeholder="placeholder" rows="1"
       @keydown.enter.prevent="handleEnter"
     />
-    <button class="ai-send-button" :disabled="disabled || !message.trim()" @click="sendMessage">
-      发送
+    <button class="ai-send-button" :disabled="disabled || loading || !message.trim()" @click="sendMessage">
+      {{ loading ? '思考中...' : '发送' }}
     </button>
   </div>
 </template>
@@ -17,6 +17,7 @@ const props = defineProps({
   modelValue: { type: String, default: '' },
   placeholder: { type: String, default: '请输入消息...' },
   disabled: { type: Boolean, default: false },
+  loading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits<{
@@ -37,7 +38,7 @@ watch(
 
 function sendMessage() {
   const text = message.value.trim()
-  if (!text)
+  if (!text || props.disabled || props.loading)
     return
   emit('send', text)
   emit('update:modelValue', '')
