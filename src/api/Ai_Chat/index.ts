@@ -27,7 +27,7 @@ export interface AiChatResponse {
 /**
  * 第三方 AI 接口返回的是原始 JSON，不走项目内 code/data 包装协议。
  */
-export function Ai_Chat(data: AiChatRequest) {
+export function Ai_Chat(data: any) {
   return new Promise<AiChatResponse>((resolve, reject) => {
     uni.request({
       url: 'https://api.deepseek.com/chat/completions',
@@ -35,7 +35,7 @@ export function Ai_Chat(data: AiChatRequest) {
       data,
       dataType: 'json',
       header: {
-        Authorization: SK,
+        'Authorization': SK,
         'Content-Type': 'application/json',
       },
       success: (res) => {
