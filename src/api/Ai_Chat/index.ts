@@ -1,5 +1,3 @@
-const SK = 'Bearer sk-c62f4f2a28ce4e22882f308badf22591'
-
 export interface AiChatMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
