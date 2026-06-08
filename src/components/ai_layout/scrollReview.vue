@@ -18,17 +18,6 @@
         暂无对话，开始聊天吧
       </div>
     </div>
-
-    <div v-if="showInput" class="chat-input-wrapper">
-      <textarea
-        ref="textareaRef" v-model="inputText" class="chat-textarea" :placeholder="placeholder"
-        :style="{ height: `${inputHeight}px` }" rows="1" @input="updateInputHeight"
-        @keydown.enter.prevent="handleEnter"
-      />
-      <button class="chat-send-button" :disabled="!inputText.trim()" @click="sendMessage">
-        发送
-      </button>
-    </div>
   </div>
 </template>
 
@@ -55,11 +44,7 @@ const props = defineProps({
   maxInputHeight: {
     type: Number,
     default: 140,
-  },
-  showInput: {
-    type: Boolean,
-    default: true,
-  },
+  }
 })
 
 const emit = defineEmits<{
@@ -67,22 +52,7 @@ const emit = defineEmits<{
   (e: 'update:inputHeight', value: number): void
 }>()
 
-const inputText = ref('')
-const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const scrollRef = ref<HTMLElement | null>(null)
-const inputHeight = ref(48)
-
-function updateInputHeight() {
-  const textarea = textareaRef.value
-  if (!textarea)
-    return
-
-  textarea.style.height = 'auto'
-  const nextHeight = Math.min(textarea.scrollHeight, props.maxInputHeight)
-  textarea.style.height = `${nextHeight}px`
-  inputHeight.value = nextHeight
-  emit('update:inputHeight', nextHeight)
-}
 
 function scrollToBottom() {
   nextTick(() => {
@@ -92,20 +62,6 @@ function scrollToBottom() {
   })
 }
 
-function sendMessage() {
-  const content = inputText.value.trim()
-  if (!content)
-    return
-
-  emit('send', content)
-  inputText.value = ''
-  updateInputHeight()
-  scrollToBottom()
-}
-
-function handleEnter() {
-  sendMessage()
-}
 
 watch(
   () => props.messages,
@@ -116,7 +72,6 @@ watch(
 )
 
 onMounted(() => {
-  updateInputHeight()
   scrollToBottom()
 })
 </script>
