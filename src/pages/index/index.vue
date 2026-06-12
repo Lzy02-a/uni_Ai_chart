@@ -7,7 +7,7 @@ definePage({
 
 function goChat() {
   uni.navigateTo({
-    url: '/pages/ai_chat/index',
+    url: 'pages-ai-server/ai_chat/index',
   })
 }
 </script>
@@ -30,7 +30,7 @@ function goChat() {
   .btn-chart {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007AFF;
+    background-color: #007aff;
     color: #fff;
     border-radius: 4px;
     font-size: 16px;

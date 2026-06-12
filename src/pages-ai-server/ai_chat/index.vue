@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import ScrollReview from '@/components/ai_layout/scrollReview.vue'
-import BottomInput from '@/components/ai_layout/bottomInput.vue'
+import ScrollReview from '../component/scrollReview.vue'
+import BottomInput from '../component/bottomInput.vue'
 import { Ai_Chat } from '@/api/Ai_Chat'
 
 definePage({

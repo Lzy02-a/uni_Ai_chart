@@ -3,7 +3,6 @@ import type { CustomRequestOptions, IResponse } from '@/http/types'
 import { nextTick } from 'vue'
 import { useTokenStore } from '@/store/token'
 import { isDoubleTokenMode } from '@/utils'
-import { toLoginPage } from '@/utils/toLoginPage'
 import { ResultEnum } from './tools/enum'
 
 // 刷新 token 状态管理
@@ -32,7 +31,7 @@ export function http<T>(options: CustomRequestOptions) {
           if (!isDoubleTokenMode) {
             // 未启用双token策略，清理用户信息，跳转到登录页
             tokenStore.logout()
-            toLoginPage()
+
             return reject(res)
           }
 
@@ -80,7 +79,7 @@ export function http<T>(options: CustomRequestOptions) {
               await tokenStore.logout()
               // 跳转到登录页
               setTimeout(() => {
-                toLoginPage()
+
               }, 2000)
             }
             finally {
@@ -107,10 +106,10 @@ export function http<T>(options: CustomRequestOptions) {
 
         // 处理其他错误
         !options.hideErrorToast
-        && uni.showToast({
-          icon: 'none',
-          title: (res.data as any).msg || '请求错误',
-        })
+          && uni.showToast({
+            icon: 'none',
+            title: (res.data as any).msg || '请求错误',
+          })
         reject(res)
       },
       // 响应失败
