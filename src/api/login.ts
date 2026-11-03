@@ -66,11 +66,16 @@ export function updateUserPassword(data: IUpdatePassword) {
  * @returns Promise 包含微信登录凭证(code)
  */
 export function getWxCode() {
-  return new Promise<UniApp.LoginRes>((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     uni.login({
       provider: 'weixin',
-      success: res => resolve(res),
-      fail: err => reject(new Error(err)),
+      success: (res) => {
+        if (res.code)
+          resolve(res.code)
+        else
+          reject(new Error('获取微信登录凭证失败'))
+      },
+      fail: err => reject(new Error(err.errMsg)),
     })
   })
 }
