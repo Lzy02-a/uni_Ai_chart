@@ -15,28 +15,16 @@ definePage({
 const tokenStore = useTokenStore()
 const errorMessage = ref('')
 const loading = ref(false)
-const loginMethod = ref<'password' | 'wechat'>('password')
 const username = ref('')
 const password = ref('')
 const usernameError = ref('')
 const passwordError = ref('')
-let loginCode = ''
-let loginCodeCreatedAt = 0
 
 onLoad(() => {
   if (tokenStore.updateNowTime().hasLogin) {
     uni.switchTab({ url: '/pages/index/index' })
     return
   }
-  // #ifdef MP-WEIXIN
-  getWxCode().then((code) => {
-    loginCode = code
-    loginCodeCreatedAt = Date.now()
-  }).catch(() => {
-    // 点击登录后重新获取凭证。
-    loginCode = ''
-  })
-  // #endif
 })
 
 async function handlePasswordLogin() {
@@ -44,40 +32,14 @@ async function handlePasswordLogin() {
     return
 
   errorMessage.value = ''
-  usernameError.value = username.value.trim() ? '' : '请输入用户名'
-  passwordError.value = password.value ? '' : '请输入密码'
-  if (usernameError.value || passwordError.value)
-    return
-
-  loginMethod.value = 'password'
   loading.value = true
   try {
-    await tokenStore.login({ username: username.value.trim(), password: password.value })
+    const code = await getWxCode()
+    await tokenStore.login({ code, username: username.value.trim(), password: password.value })
     uni.switchTab({ url: '/pages/index/index' })
   }
-  catch {
-    errorMessage.value = '登录失败，请检查用户名和密码后重试'
-  }
-  finally {
-    loading.value = false
-  }
-}
-
-async function handleWxLogin() {
-  if (loading.value)
-    return
-
-  errorMessage.value = ''
-  loginMethod.value = 'wechat'
-  loading.value = true
-  const code = Date.now() - loginCodeCreatedAt < 4 * 60 * 1000 ? loginCode : ''
-  loginCode = ''
-  try {
-    await tokenStore.wxLogin({ code })
-    uni.switchTab({ url: '/pages/index/index' })
-  }
-  catch {
-    errorMessage.value = '登录失败，请重新点击微信登录'
+  catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '登录失败，请重试；首次登录需填写用户名和密码'
   }
   finally {
     loading.value = false
@@ -148,28 +110,12 @@ async function handleWxLogin() {
             <button
               class="login-button"
               form-type="submit"
-              :loading="loading && loginMethod === 'password'"
+              :loading="loading"
               :disabled="loading"
             >
-              {{ loading && loginMethod === 'password' ? '正在登录' : '登录' }}
+              {{ loading ? '正在登录' : '登录' }}
             </button>
           </form>
-          <!-- #ifdef MP-WEIXIN -->
-          <view class="login-divider">
-            <view class="divider-line" />
-            <text>或使用微信登录</text>
-            <view class="divider-line" />
-          </view>
-          <button
-            class="login-button login-button-secondary"
-            :loading="loading && loginMethod === 'wechat'"
-            :disabled="loading"
-            @click="handleWxLogin"
-          >
-            {{ loading && loginMethod === 'wechat' ? '正在登录' : '微信一键登录' }}
-          </button>
-          <text class="login-hint">无需输入账号密码，使用微信即可登录</text>
-          <!-- #endif -->
         </view>
 
         <view class="card-footer">

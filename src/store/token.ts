@@ -8,8 +8,6 @@ import {
   login as _login,
   logout as _logout,
   refreshToken as _refreshToken,
-  wxLogin as _wxLogin,
-  getWxCode,
 } from '@/api/login'
 import { isDoubleTokenRes, isSingleTokenRes } from '@/api/types/login'
 import { isDoubleTokenMode } from '@/utils'
@@ -131,38 +129,6 @@ export const useTokenStore = defineStore(
         console.error('登录失败:', error)
         uni.showToast({
           title: '登录失败，请重试',
-          icon: 'error',
-        })
-        throw error
-      }
-      finally {
-        updateNowTime()
-      }
-    }
-
-    /**
-     * 微信登录
-     * 有的时候后端会用一个接口返回token和用户信息，有的时候会分开2个接口，一个获取token，一个获取用户信息
-     * （各有利弊，看业务场景和系统复杂度），这里使用2个接口返回的来模拟
-     * @returns 登录结果
-     */
-    const wxLogin = async (options: { code?: string } = {}) => {
-      try {
-        // 获取微信小程序登录的code
-        const code = options.code || await getWxCode()
-        const res = await _wxLogin({ code })
-        console.log('微信登录-res: ', res)
-        await _postLogin(res)
-        uni.showToast({
-          title: '登录成功',
-          icon: 'success',
-        })
-        return res
-      }
-      catch (error) {
-        console.error('微信登录失败:', error)
-        uni.showToast({
-          title: '微信登录失败，请重试',
           icon: 'error',
         })
         throw error
@@ -295,7 +261,6 @@ export const useTokenStore = defineStore(
     return {
       // 核心API方法
       login,
-      wxLogin,
       logout,
 
       // 认证状态判断（最常用的）

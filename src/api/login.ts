@@ -7,6 +7,7 @@ import { http } from '@/http/http'
 export interface ILoginForm {
   username: string
   password: string
+  code: string
 }
 
 /**
@@ -22,7 +23,7 @@ export function getCode() {
  * @param loginForm 登录表单
  */
 export function login(loginForm: ILoginForm) {
-  return http.post<IAuthLoginRes>('/auth/login', loginForm)
+  return http.post<IAuthLoginRes>('/user/login', loginForm)
 }
 
 /**
@@ -30,21 +31,22 @@ export function login(loginForm: ILoginForm) {
  * @param refreshToken 刷新token
  */
 export function refreshToken(refreshToken: string) {
-  return http.post<IDoubleTokenRes>('/auth/refreshToken', { refreshToken })
+  return http.post<IDoubleTokenRes>('/user/refresh', { refreshToken })
 }
 
 /**
  * 获取用户信息
  */
-export function getUserInfo() {
-  return http.get<IUserInfoRes>('/user/info')
+export async function getUserInfo(): Promise<IUserInfoRes> {
+  const user = await http.get<IUserInfoRes & { id: number }>('/user/info')
+  return { ...user, userId: user.id }
 }
 
 /**
  * 退出登录
  */
 export function logout() {
-  return http.get<void>('/auth/logout')
+  return http.post<void>('/user/logout')
 }
 
 /**
@@ -67,6 +69,11 @@ export function updateUserPassword(data: IUpdatePassword) {
  */
 export function getWxCode() {
   return new Promise<string>((resolve, reject) => {
+    // #ifndef MP-WEIXIN
+    reject(new Error('请在微信小程序中登录'))
+    return
+    // #endif
+    // #ifdef MP-WEIXIN
     uni.login({
       provider: 'weixin',
       success: (res) => {
@@ -77,6 +84,7 @@ export function getWxCode() {
       },
       fail: err => reject(new Error(err.errMsg)),
     })
+    // #endif
   })
 }
 
@@ -85,6 +93,6 @@ export function getWxCode() {
  * @param params 微信登录参数，包含code
  * @returns Promise 包含登录结果
  */
-export function wxLogin(data: { code: string }) {
-  return http.post<IAuthLoginRes>('/auth/wxLogin', data)
+export function wxLogin(data: ILoginForm) {
+  return login(data)
 }
